@@ -1,7 +1,12 @@
 package dev.thomasharris.routinetimer2.ui
 
+import androidx.compose.foundation.AmbientContentColor
 import androidx.compose.foundation.Text
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
@@ -13,13 +18,18 @@ import androidx.compose.material.icons.filled.ArrowRight
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.VectorAsset
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.ui.tooling.preview.Preview
+import dev.thomasharris.routinetimer2.EditState
 import dev.thomasharris.routinetimer2.MainViewModel
 import dev.thomasharris.routinetimer2.MainViewState
 import dev.thomasharris.routinetimer2.Phase
+
+private val disabled: Color = Color.Gray.copy(alpha = .6f)
 
 @Composable
 fun PhaseCard(
@@ -45,16 +55,31 @@ fun PhaseCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                IconButton(onClick = { onClick(PhaseCardEvent.DECREMENT) }) {
-                    Icon(asset = Icons.Default.ArrowLeft.scale(2f))
+                IconButton(
+                    enabled = state is EditState,
+                    modifier = Modifier.padding(start = 32.dp),
+                    onClick = { onClick(PhaseCardEvent.DECREMENT) },
+                ) {
+                    Icon(
+                        tint = if (state is EditState) AmbientContentColor.current else disabled,
+                        asset = Icons.Default.ArrowLeft.scale(2f),
+                    )
                 }
                 Text(
                     state.valueOfFormatted(phase = phase),
+                    textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.body1.copy(fontSize = 32.sp),
-                    modifier = Modifier.padding(8.dp)
+                    modifier = Modifier.padding(8.dp).weight(1f)
                 )
-                IconButton(onClick = { onClick(PhaseCardEvent.INCREMENT) }) {
-                    Icon(asset = Icons.Default.ArrowRight.scale(2f))
+                IconButton(
+                    enabled = state is EditState,
+                    modifier = Modifier.padding(end = 32.dp),
+                    onClick = { onClick(PhaseCardEvent.INCREMENT) },
+                ) {
+                    Icon(
+                        tint = if (state is EditState) AmbientContentColor.current else disabled,
+                        asset = Icons.Default.ArrowRight.scale(2f),
+                    )
                 }
             }
         }
@@ -69,8 +94,8 @@ fun PhaseCardPreview() {
 }
 
 enum class PhaseCardEvent {
-    DECREMENT,
     INCREMENT,
+    DECREMENT,
 }
 
 fun VectorAsset.scale(scale: Float): VectorAsset =
