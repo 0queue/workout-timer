@@ -3,6 +3,7 @@ package dev.thomasharris.routinetimer2.ui
 import androidx.compose.foundation.AmbientContentColor
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowLeft
@@ -25,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.ui.tooling.preview.Preview
 import dev.thomasharris.routinetimer2.EditState
+import dev.thomasharris.routinetimer2.InProgressState
 import dev.thomasharris.routinetimer2.MainViewModel
 import dev.thomasharris.routinetimer2.MainViewState
 import dev.thomasharris.routinetimer2.Phase
@@ -42,46 +45,57 @@ fun PhaseCard(
         shape = RoundedCornerShape(8.dp),
         elevation = 4.dp,
     ) {
-        Column(
-            modifier = Modifier.padding(8.dp).fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                phase.displayName,
-                style = MaterialTheme.typography.h4,
-            )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+        Box {
+            Column(
+                modifier = Modifier.padding(8.dp).fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                IconButton(
-                    enabled = state is EditState,
-                    modifier = Modifier.padding(start = 32.dp),
-                    onClick = { onClick(PhaseCardEvent.DECREMENT) },
-                ) {
-                    Icon(
-                        tint = if (state is EditState) AmbientContentColor.current else disabled,
-                        asset = Icons.Default.ArrowLeft.scale(2f),
-                    )
-                }
                 Text(
-                    state.valueOfFormatted(phase = phase),
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.body1.copy(fontSize = 32.sp),
-                    modifier = Modifier.padding(8.dp).weight(1f)
+                    phase.displayName,
+                    style = MaterialTheme.typography.h4,
                 )
-                IconButton(
-                    enabled = state is EditState,
-                    modifier = Modifier.padding(end = 32.dp),
-                    onClick = { onClick(PhaseCardEvent.INCREMENT) },
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    Icon(
-                        tint = if (state is EditState) AmbientContentColor.current else disabled,
-                        asset = Icons.Default.ArrowRight.scale(2f),
+                    IconButton(
+                        enabled = state is EditState,
+                        modifier = Modifier.padding(start = 32.dp),
+                        onClick = { onClick(PhaseCardEvent.DECREMENT) },
+                    ) {
+                        Icon(
+                            tint = if (state is EditState) AmbientContentColor.current else disabled,
+                            asset = Icons.Default.ArrowLeft.scale(2f),
+                        )
+                    }
+                    Text(
+                        state.valueOfFormatted(phase = phase),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.body1.copy(fontSize = 32.sp),
+                        modifier = Modifier.padding(8.dp).weight(1f)
                     )
+                    IconButton(
+                        enabled = state is EditState,
+                        modifier = Modifier.padding(end = 32.dp),
+                        onClick = { onClick(PhaseCardEvent.INCREMENT) },
+                    ) {
+                        Icon(
+                            tint = if (state is EditState) AmbientContentColor.current else disabled,
+                            asset = Icons.Default.ArrowRight.scale(2f),
+                        )
+                    }
                 }
             }
+
+            // TODO custom progress indicator that is taller? .height doesn't seem to work
+            if (state is InProgressState)
+                LinearProgressIndicator(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth(),
+                    progress = .25f
+                )
         }
     }
 }
