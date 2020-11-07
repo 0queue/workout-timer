@@ -31,6 +31,8 @@ import dev.thomasharris.routinetimer2.InProgressState
 import dev.thomasharris.routinetimer2.MainViewModel
 import dev.thomasharris.routinetimer2.MainViewState
 import dev.thomasharris.routinetimer2.Phase
+import kotlin.math.ceil
+import kotlin.math.roundToInt
 
 private val disabled: Color = Color.Gray.copy(alpha = .6f)
 
@@ -40,6 +42,11 @@ fun PhaseCard(
     phase: Phase,
     onClick: (PhaseCardEvent) -> Unit,
 ) {
+    val textColor = if (state is InProgressState && state.currentPhase != phase)
+        disabled
+    else
+        Color.Unspecified
+
     Card(
         modifier = Modifier.fillMaxWidth().padding(16.dp),
         shape = RoundedCornerShape(8.dp),
@@ -53,6 +60,7 @@ fun PhaseCard(
                 Text(
                     phase.displayName,
                     style = MaterialTheme.typography.h4,
+                    color = textColor
                 )
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -73,7 +81,8 @@ fun PhaseCard(
                         state.valueOfFormatted(phase = phase),
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.body1.copy(fontSize = 32.sp),
-                        modifier = Modifier.padding(8.dp).weight(1f)
+                        modifier = Modifier.padding(8.dp).weight(1f),
+                        color = textColor
                     )
                     IconButton(
                         enabled = state is EditState,
@@ -89,12 +98,12 @@ fun PhaseCard(
             }
 
             // TODO custom progress indicator that is taller? .height doesn't seem to work
-            if (state is InProgressState)
+            if (state is InProgressState && state.currentPhase == phase)
                 LinearProgressIndicator(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .fillMaxWidth(),
-                    progress = .25f
+                    progress = 1f - state.progress.coerceIn(0f, 1f)
                 )
         }
     }
@@ -124,15 +133,23 @@ val Phase.displayName: String
     }
 
 fun MainViewState.valueOfFormatted(phase: Phase): String {
-    val n = when (phase) {
+    var n = when (phase) {
         Phase.PREP -> phases.prepTimeSeconds
         Phase.WORK -> phases.workTimeSeconds
         Phase.REST -> phases.restTimeSeconds
         Phase.SETS -> phases.sets
     }
 
-    if (phase == Phase.SETS)
+    if (phase == Phase.SETS) // TODO current set?
         return n.toString()
+
+    // ew
+    if (this is InProgressState && currentPhase == phase) {
+       n = n
+           .times(1f - progress)
+           .let(::ceil)
+           .roundToInt()
+    }
 
     return n.asTime()
 }

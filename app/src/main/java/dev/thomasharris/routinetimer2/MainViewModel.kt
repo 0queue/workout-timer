@@ -1,10 +1,40 @@
 package dev.thomasharris.routinetimer2
 
+import android.os.Handler
+import android.os.Looper
+import android.view.Choreographer
 import dev.thomasharris.routinetimer2.ui.PhaseCardEvent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.util.concurrent.CountDownLatch
 
 class MainViewModel {
+
+    private val scope = CoroutineScope(Dispatchers.Default)
+
+    private val mainChoreographer: Choreographer
+
+    init {
+        // taken from AndroidAnimationClock
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            mainChoreographer = Choreographer.getInstance()
+        } else {
+            val latch = CountDownLatch(1)
+            var choreographer: Choreographer? = null
+            Handler(Looper.getMainLooper()).postAtFrontOfQueue {
+                try {
+                    choreographer = Choreographer.getInstance()
+                } finally {
+                    latch.countDown()
+                }
+            }
+            latch.await()
+            mainChoreographer = choreographer!!
+        }
+    }
+
     private val _stateFlow: MutableStateFlow<MainViewState> = MutableStateFlow(EditState(Phases(
         prepTimeSeconds = 5,
         workTimeSeconds = 5,
@@ -13,49 +43,27 @@ class MainViewModel {
     )))
     val stateFlow = _stateFlow.asStateFlow()
 
+    private val frameCallback: Choreographer.FrameCallback = Choreographer.FrameCallback(this::dispatchFrame)
+
+    private fun dispatchFrame(nanos: Long) {
+        _stateFlow.value = _stateFlow.value.accept(Action.Frame(nanos)).also { state ->
+            if (state is InProgressState && !state.isPaused)
+                mainChoreographer.postFrameCallback(frameCallback)
+        }
+    }
 
     fun onToggle() {
-        _stateFlow.value = when (val v = stateFlow.value) {
-            is EditState -> InProgressState(v.phases, Phase.PREP, 0.25f, false)
-            is InProgressState -> EditState(v.phases)
+        _stateFlow.value = _stateFlow.value.accept(Action.PlayPause).also { state ->
+            if (state is InProgressState && !state.isPaused) {
+                mainChoreographer.postFrameCallback(frameCallback)
+            }
         }
     }
 
     fun onPhaseClicked(phase: Phase, phaseCardEvent: PhaseCardEvent) {
-        when (val state = _stateFlow.value) {
-            is EditState -> {
-                val increment = when (phaseCardEvent) {
-                    PhaseCardEvent.INCREMENT -> if (phase == Phase.SETS) 1 else 5
-                    PhaseCardEvent.DECREMENT -> if (phase == Phase.SETS) -1 else -5
-                }
-
-                // TODO ew
-                val newPhases = when (phase) {
-                    Phase.PREP -> if (state.phases.prepTimeSeconds + increment >= 5)
-                        state.phases.copy(prepTimeSeconds = state.phases.prepTimeSeconds + increment)
-                    else
-                        state.phases
-                    Phase.WORK -> if (state.phases.workTimeSeconds + increment >= 5)
-                        state.phases.copy(workTimeSeconds = state.phases.workTimeSeconds + increment)
-                    else
-                        state.phases
-
-                    Phase.REST -> if (state.phases.restTimeSeconds + increment >= 5)
-                        state.phases.copy(restTimeSeconds = state.phases.restTimeSeconds + increment)
-                    else
-                        state.phases
-
-                    Phase.SETS -> if (state.phases.sets + increment >= 1)
-                        state.phases.copy(sets = state.phases.sets + increment)
-                    else
-                        state.phases
-                }
-
-                _stateFlow.value = state.copy(phases = newPhases)
-            }
-            else -> {
-                // nothing
-            }
+        _stateFlow.value = when (phaseCardEvent) {
+            PhaseCardEvent.INCREMENT -> _stateFlow.value.accept(Action.Increment(phase))
+            PhaseCardEvent.DECREMENT -> _stateFlow.value.accept(Action.Decrement(phase))
         }
     }
 }

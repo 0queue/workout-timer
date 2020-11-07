@@ -14,6 +14,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.AnimationClockAmbient
 import androidx.compose.ui.platform.setContent
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -32,6 +33,8 @@ class MainActivity : AppCompatActivity() {
 
         setContent {
             val state by mainViewModel.stateFlow.collectAsState()
+
+            AnimationClockAmbient
 
             RoutineTimer2Theme {
                 // A surface container using the 'background' color from the theme
@@ -54,6 +57,9 @@ fun MainScreen(
     onPlayButtonClicked: () -> Unit,
     onPhaseClicked: (Phase, PhaseCardEvent) -> Unit,
 ) {
+
+    val canPlay = state is EditState || (state is InProgressState && state.isPaused)
+
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
             backgroundColor = MaterialTheme.colors.surface,
@@ -77,10 +83,10 @@ fun MainScreen(
                     .padding(bottom = 16.dp),
                 onClick = onPlayButtonClicked,
             ) {
+                val icon = if (canPlay) Icons.Default.PlayArrow else Icons.Default.Pause
                 Icon(
                     modifier = Modifier.padding(4.dp),
-                    asset = (if (state is EditState) Icons.Default.PlayArrow else Icons.Default.Pause)
-                        .scale(2f),
+                    asset = icon.scale(2f),
                 )
             }
         }
