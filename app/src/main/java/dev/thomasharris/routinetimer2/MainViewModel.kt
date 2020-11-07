@@ -15,7 +15,7 @@ class MainViewModel {
 
     fun toggle() {
         _stateFlow.value = when (val v = stateFlow.value) {
-            is EditState -> InProgressState(v.phases, "prep", 0.25f, false)
+            is EditState -> InProgressState(v.phases, Phase.PREP, 0.25f, false)
             is InProgressState -> EditState(v.phases)
         }
     }

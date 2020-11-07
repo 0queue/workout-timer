@@ -1,14 +1,16 @@
 package dev.thomasharris.routinetimer2
 
-sealed class MainViewState
+sealed class MainViewState {
+    abstract val phases: Phases
+}
 
 data class EditState(
-    val phases: Phases,
+    override val phases: Phases,
 ) : MainViewState()
 
 data class InProgressState(
-    val phases: Phases,
-    val currentPhase: String, // TODO enum
+    override val phases: Phases,
+    val currentPhase: Phase,
     val progress: Float,
     val isPaused: Boolean,
 ) : MainViewState()
@@ -19,3 +21,10 @@ data class Phases(
     val restTimeSeconds: Int,
     val sets: Int,
 )
+
+enum class Phase {
+    PREP,
+    WORK,
+    REST,
+    SETS,
+}

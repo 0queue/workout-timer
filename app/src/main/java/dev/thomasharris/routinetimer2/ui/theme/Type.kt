@@ -1,4 +1,4 @@
-package dev.thomasharris.routinetimer2.ui
+package dev.thomasharris.routinetimer2.ui.theme
 
 import androidx.compose.material.Typography
 import androidx.compose.ui.text.TextStyle
