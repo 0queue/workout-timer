@@ -4,11 +4,22 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.ScrollableColumn
 import androidx.compose.foundation.Text
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.preferredSize
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -42,7 +53,8 @@ class MainActivity : AppCompatActivity() {
                     MainScreen(
                         state = state,
                         onPlayButtonClicked = mainViewModel::onToggle,
-                        onPhaseClicked = mainViewModel::onPhaseClicked
+                        onPhaseClicked = mainViewModel::onPhaseClicked,
+                        onStopClicked = mainViewModel::onStopClicked,
                     )
                 }
             }
@@ -56,6 +68,7 @@ fun MainScreen(
     state: MainViewState,
     onPlayButtonClicked: () -> Unit,
     onPhaseClicked: (Phase, PhaseCardEvent) -> Unit,
+    onStopClicked: () -> Unit,
 ) {
 
     val canPlay = state is EditState || (state is InProgressState && state.isPaused)
@@ -69,9 +82,13 @@ fun MainScreen(
         Box(modifier = Modifier.fillMaxSize()) {
             ScrollableColumn {
                 Phase.values().forEach { phase ->
-                    PhaseCard(state = state, phase = phase, onClick = {
-                        onPhaseClicked(phase, it)
-                    })
+                    PhaseCard(
+                        state = state,
+                        phase = phase,
+                        onClick = {
+                            onPhaseClicked(phase, it)
+                        },
+                    )
                 }
 
                 Spacer(modifier = Modifier.preferredSize((8 + 56).dp))
@@ -89,6 +106,19 @@ fun MainScreen(
                     asset = icon.scale(2f),
                 )
             }
+
+            if (state is InProgressState)
+                IconButton(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp),
+                    onClick = onStopClicked
+                ) {
+                    Icon(
+                        modifier = Modifier.padding(4.dp),
+                        asset = Icons.Default.Stop.scale(2f)
+                    )
+                }
         }
     }
 }
@@ -101,6 +131,7 @@ fun Preview() {
             state = MainViewModel().stateFlow.value,
             onPlayButtonClicked = {},
             onPhaseClicked = { _, _ -> },
+            onStopClicked = {},
         )
     }
 }

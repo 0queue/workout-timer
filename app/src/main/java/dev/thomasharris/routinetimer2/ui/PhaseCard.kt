@@ -41,14 +41,16 @@ fun PhaseCard(
     state: MainViewState,
     phase: Phase,
     onClick: (PhaseCardEvent) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    val textColor = if (state is InProgressState && state.currentPhase != phase)
-        disabled
-    else
-        Color.Unspecified
+    val textColor = when {
+        phase == Phase.SETS -> Color.Unspecified
+        state is InProgressState && state.current?.phase != phase -> disabled
+        else -> Color.Unspecified
+    }
 
     Card(
-        modifier = Modifier.fillMaxWidth().padding(16.dp),
+        modifier = modifier.fillMaxWidth().padding(16.dp),
         shape = RoundedCornerShape(8.dp),
         elevation = 4.dp,
     ) {
@@ -98,7 +100,7 @@ fun PhaseCard(
             }
 
             // TODO custom progress indicator that is taller? .height doesn't seem to work
-            if (state is InProgressState && state.currentPhase == phase)
+            if (state is InProgressState && state.current?.phase == phase)
                 LinearProgressIndicator(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
@@ -140,15 +142,19 @@ fun MainViewState.valueOfFormatted(phase: Phase): String {
         Phase.SETS -> phases.sets
     }
 
-    if (phase == Phase.SETS) // TODO current set?
-        return n.toString()
+    if (phase == Phase.SETS) {// TODO current set?
+        if (this is InProgressState)
+            n = steps.filter { it.phase == Phase.WORK }.count()
 
+        return n.toString()
+    }
     // ew
-    if (this is InProgressState && currentPhase == phase) {
-       n = n
-           .times(1f - progress)
-           .let(::ceil)
-           .roundToInt()
+    if (this is InProgressState && current?.phase == phase) {
+        n = n
+            .times(1f - progress)
+            .let(::ceil)
+            .roundToInt()
+            .coerceAtLeast(1)// TODO picked up for smoothness, necessary?
     }
 
     return n.asTime()

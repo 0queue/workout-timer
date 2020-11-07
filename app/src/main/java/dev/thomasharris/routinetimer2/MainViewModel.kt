@@ -66,4 +66,8 @@ class MainViewModel {
             PhaseCardEvent.DECREMENT -> _stateFlow.value.accept(Action.Decrement(phase))
         }
     }
+
+    fun onStopClicked() {
+        _stateFlow.value = _stateFlow.value.accept(Action.Stop)
+    }
 }

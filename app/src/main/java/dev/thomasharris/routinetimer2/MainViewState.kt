@@ -1,7 +1,5 @@
 package dev.thomasharris.routinetimer2
 
-import android.util.Log
-
 sealed class MainViewState {
     abstract val phases: Phases
 }
@@ -10,13 +8,53 @@ data class EditState(
     override val phases: Phases,
 ) : MainViewState()
 
+// to generate in progress state:
+// PREP
+// FOR EACH SET-1
+//   WORK
+//   REST
+// WORK
+// Each Step is a Phase plus a Progress plus a MaxNanos
+data class Step(
+    val phase: Phase,
+    val maxNanos: Long,
+)
+
 data class InProgressState(
     override val phases: Phases,
-    val currentPhase: Phase,
+    val steps: List<Step>,
     val progress: Float,
-    val lastTime: Long?,
+    val lastTime: Long? = null,
 ) : MainViewState() {
+    val current = steps.firstOrNull()
+    val isDone = steps.isEmpty()
     val isPaused = lastTime == null
+
+    fun pop(): InProgressState = when {
+        isDone -> this
+        else -> copy(steps = steps.drop(1))
+    }
+}
+
+fun EditState.toInProgressState2(): InProgressState {
+
+    val steps = mutableListOf(
+        Step(Phase.PREP, phases.prepTimeSeconds.nanos)
+    )
+
+    for (i in 0 until phases.sets - 1) {
+        steps.add(Step(Phase.WORK, phases.workTimeSeconds.nanos))
+        steps.add(Step(Phase.REST, phases.restTimeSeconds.nanos))
+    }
+
+    steps.add(Step(Phase.WORK, phases.workTimeSeconds.nanos))
+
+    return InProgressState(
+        phases = phases,
+        steps = steps,
+        progress = 0f,
+        lastTime = System.nanoTime()
+    )
 }
 
 data class Phases(
@@ -41,6 +79,8 @@ sealed class Action {
     object PlayPause : Action()
 
     data class Frame(val nanos: Long) : Action()
+
+    object Stop : Action()
 }
 
 fun MainViewState.accept(action: Action): MainViewState {
@@ -48,29 +88,30 @@ fun MainViewState.accept(action: Action): MainViewState {
         is EditState -> state.accept(action)
         is InProgressState -> when (action) {
             is Action.Frame -> {
-                if (state.lastTime == null) {
-                    state
-                } else if (state.progress >= 1f) {
-                    EditState(state.phases)
-                } else {
-                    val deltaT = action.nanos - state.lastTime
-                    val totalT = when (state.currentPhase) {
-                        Phase.PREP -> state.phases.prepTimeSeconds
-                        Phase.WORK -> state.phases.workTimeSeconds
-                        Phase.REST -> state.phases.restTimeSeconds
-                        Phase.SETS -> throw IllegalStateException("not actually a phase")
-                    } * 1_000_000_000L
+                when {
+                    state.lastTime == null -> state
+                    state.isDone -> EditState(state.phases)
+                    state.progress >= 1f -> {
+                        state.pop().copy(progress = 0f)
+                    }
+                    state.current != null -> {
+                        val deltaT = action.nanos - state.lastTime
+                        val percentProgress =
+                            deltaT.toFloat() / state.current.maxNanos.toFloat()
 
-                    val percentProgress = deltaT.toFloat() / totalT.toFloat()
-
-                    state.copy(
-                        progress = state.progress + percentProgress,
-                        lastTime = action.nanos
-                    )
+                        state.copy(
+                            progress = state.progress + percentProgress,
+                            lastTime = action.nanos
+                        )
+                    }
+                    else -> state
                 }
             }
             is Action.PlayPause -> {
-                state.copy(lastTime = if (state.lastTime == null) System.nanoTime() else null)
+                state.copy(lastTime = if (state.isPaused) System.nanoTime() else null)
+            }
+            is Action.Stop -> {
+                EditState(state.phases)
             }
             else -> state
         }
@@ -112,9 +153,10 @@ fun EditState.accept(action: Action): MainViewState {
 
             copy(phases = newPhases)
         }
-        is Action.PlayPause -> {
-            InProgressState(phases, Phase.PREP, 0f, System.nanoTime())
-        }
+        is Action.PlayPause -> toInProgressState2()
         else -> this // TODO
     }
 }
+
+val Int.nanos: Long
+    get() = this * 1_000_000_000L
