@@ -1,6 +1,5 @@
 package dev.thomasharris.workouttimer.ui
 
-import androidx.compose.foundation.AmbientContentColor
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,18 +8,19 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.AmbientEmphasisLevels
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ProvideEmphasis
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowLeft
 import androidx.compose.material.icons.filled.ArrowRight
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.VectorAsset
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -34,7 +34,6 @@ import dev.thomasharris.workouttimer.Phase
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 
-private val disabled: Color = Color.Gray.copy(alpha = .6f)
 
 @Composable
 fun PhaseCard(
@@ -43,10 +42,15 @@ fun PhaseCard(
     onClick: (PhaseCardEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val textColor = when {
-        phase == Phase.SETS -> Color.Unspecified
-        state is InProgressState && state.current?.phase != phase -> disabled
-        else -> Color.Unspecified
+    val textEmphasis = when {
+        phase == Phase.SETS -> AmbientEmphasisLevels.current.high
+        state is InProgressState && state.current?.phase != phase -> AmbientEmphasisLevels.current.disabled
+        else -> AmbientEmphasisLevels.current.high
+    }
+
+    val buttonEmphasis = when (state) {
+        is InProgressState -> AmbientEmphasisLevels.current.disabled
+        else -> AmbientEmphasisLevels.current.high
     }
 
     Card(
@@ -59,42 +63,44 @@ fun PhaseCard(
                 modifier = Modifier.padding(8.dp).fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    phase.displayName,
-                    style = MaterialTheme.typography.h4,
-                    color = textColor
-                )
+                ProvideEmphasis(emphasis = textEmphasis) {
+                    Text(
+                        phase.displayName,
+                        style = MaterialTheme.typography.h4,
+                    )
+                }
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    IconButton(
-                        enabled = state is EditState,
-                        modifier = Modifier.padding(start = 32.dp),
-                        onClick = { onClick(PhaseCardEvent.DECREMENT) },
-                    ) {
-                        Icon(
-                            tint = if (state is EditState) AmbientContentColor.current else disabled,
-                            asset = Icons.Default.ArrowLeft.scale(2f),
+                    ProvideEmphasis(emphasis = buttonEmphasis) {
+                        IconButton(
+                            enabled = state is EditState,
+                            modifier = Modifier.padding(start = 32.dp),
+                            onClick = { onClick(PhaseCardEvent.DECREMENT) },
+                        ) {
+                            Icon(asset = Icons.Default.ArrowLeft.scale(2f))
+                        }
+                    }
+                    ProvideEmphasis(emphasis = textEmphasis) {
+                        Text(
+                            state.valueOfFormatted(phase = phase),
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.body1.copy(fontSize = 32.sp),
+                            modifier = Modifier.padding(8.dp).weight(1f),
                         )
                     }
-                    Text(
-                        state.valueOfFormatted(phase = phase),
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.body1.copy(fontSize = 32.sp),
-                        modifier = Modifier.padding(8.dp).weight(1f),
-                        color = textColor
-                    )
-                    IconButton(
-                        enabled = state is EditState,
-                        modifier = Modifier.padding(end = 32.dp),
-                        onClick = { onClick(PhaseCardEvent.INCREMENT) },
-                    ) {
-                        Icon(
-                            tint = if (state is EditState) AmbientContentColor.current else disabled,
-                            asset = Icons.Default.ArrowRight.scale(2f),
-                        )
+
+                    ProvideEmphasis(emphasis = buttonEmphasis) {
+                        IconButton(
+                            enabled = state is EditState,
+                            modifier = Modifier.padding(end = 32.dp),
+                            onClick = { onClick(PhaseCardEvent.INCREMENT) },
+                        ) {
+                            Icon(asset = Icons.Default.ArrowRight.scale(2f))
+                        }
                     }
                 }
             }
