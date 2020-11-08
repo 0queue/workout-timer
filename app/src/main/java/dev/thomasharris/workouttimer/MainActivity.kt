@@ -2,10 +2,13 @@ package dev.thomasharris.workouttimer
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.InteractionState
 import androidx.compose.foundation.ScrollableColumn
 import androidx.compose.foundation.Text
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,6 +20,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.RadioButton
 import androidx.compose.material.Surface
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
@@ -27,6 +31,7 @@ import androidx.compose.material.icons.filled.Stop
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.setContent
@@ -68,7 +73,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         setContent {
-            val state by mainViewModel.stateFlow.collectAsState()
+            val mainViewState by mainViewModel.stateFlow.collectAsState()
+            val settingsState by settingsViewModel.stateFlow.collectAsState()
 
             WorkoutTimerTheme {
                 // A surface container using the 'background' color from the theme
@@ -80,11 +86,14 @@ class MainActivity : AppCompatActivity() {
                             topRight = CornerSize(16.dp)
                         ),
                         sheetContent = {
-                            BottomSheet()
+                            BottomSheet(
+                                state = settingsState,
+                                onNightModeSelected = settingsViewModel::setNightMode
+                            )
                         }
                     ) {
                         MainScreen(
-                            state = state,
+                            state = mainViewState,
                             onPlayButtonClicked = mainViewModel::onToggle,
                             onPhaseClicked = mainViewModel::onPhaseClicked,
                             onStopClicked = mainViewModel::onStopClicked,
@@ -94,6 +103,14 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    @OptIn(ExperimentalMaterialApi::class)
+    override fun onBackPressed() {
+        if (bottomSheetState.isVisible)
+            bottomSheetState.hide()
+        else
+            super.onBackPressed()
     }
 }
 
@@ -165,7 +182,10 @@ fun MainScreen(
 }
 
 @Composable
-fun BottomSheet() {
+fun BottomSheet(
+    state: SettingsViewModel.State,
+    onNightModeSelected: (SettingsViewModel.State.NightMode) -> Unit,
+) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             modifier = Modifier
@@ -182,6 +202,48 @@ fun BottomSheet() {
             modifier = Modifier.align(Alignment.CenterHorizontally),
             style = MaterialTheme.typography.caption.copy(fontStyle = FontStyle.Italic),
             text = caption,
+        )
+
+        Column(
+            modifier = Modifier.padding(8.dp)
+        ) {
+            SettingsViewModel.State.NightMode.values().forEach {
+                NightModeRadioButton(
+                    state = state,
+                    nightMode = it,
+                    onNightModeSelected = onNightModeSelected
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun NightModeRadioButton(
+    state: SettingsViewModel.State,
+    nightMode: SettingsViewModel.State.NightMode,
+    onNightModeSelected: (SettingsViewModel.State.NightMode) -> Unit,
+) {
+    val interactionState = remember { InteractionState() }
+    Row {
+        RadioButton(
+            interactionState = interactionState,
+            modifier = Modifier
+                .padding(4.dp)
+                .align(Alignment.CenterVertically),
+            selected = state.nightMode == nightMode,
+            onClick = { onNightModeSelected(nightMode) }
+        )
+        Text(
+            modifier = Modifier
+                .clickable(
+                    interactionState = interactionState,
+                    indication = null,
+                    onClick = { onNightModeSelected(nightMode) },
+                )
+                .padding(4.dp)
+                .align(Alignment.CenterVertically),
+            text = nightMode.toString(),
         )
     }
 }
@@ -204,6 +266,9 @@ fun Preview() {
 @Composable
 fun PreviewBottomSheet() {
     WorkoutTimerTheme {
-        BottomSheet()
+        BottomSheet(
+            state = SettingsViewModel.State(nightMode = SettingsViewModel.State.NightMode.System),
+            onNightModeSelected = {},
+        )
     }
 }

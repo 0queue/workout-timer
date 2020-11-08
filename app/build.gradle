@@ -7,7 +7,7 @@ android {
     compileSdkVersion 30
 
     defaultConfig {
-        applicationId "dev.thomasharris.routinetimer2"
+        applicationId "dev.thomasharris.workouttimer"
         minSdkVersion 23
         targetSdkVersion 30
         versionCode 1
