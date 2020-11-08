@@ -8,26 +8,30 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.preferredSize
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.Surface
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.AnimationClockAmbient
 import androidx.compose.ui.platform.setContent
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import androidx.ui.tooling.preview.Preview
@@ -45,7 +49,7 @@ class MainActivity : AppCompatActivity() {
 
     private val ttsManager = TextToSpeechManager(this)
 
-    @OptIn(ExperimentalCoroutinesApi::class)
+    @OptIn(ExperimentalCoroutinesApi::class, ExperimentalMaterialApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -69,12 +73,24 @@ class MainActivity : AppCompatActivity() {
             WorkoutTimerTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
-                    MainScreen(
-                        state = state,
-                        onPlayButtonClicked = mainViewModel::onToggle,
-                        onPhaseClicked = mainViewModel::onPhaseClicked,
-                        onStopClicked = mainViewModel::onStopClicked,
-                    )
+                    ModalBottomSheetLayout(
+                        sheetState = bottomSheetState,
+                        sheetShape = MaterialTheme.shapes.large.copy(
+                            topLeft = CornerSize(16.dp),
+                            topRight = CornerSize(16.dp)
+                        ),
+                        sheetContent = {
+                            BottomSheet()
+                        }
+                    ) {
+                        MainScreen(
+                            state = state,
+                            onPlayButtonClicked = mainViewModel::onToggle,
+                            onPhaseClicked = mainViewModel::onPhaseClicked,
+                            onStopClicked = mainViewModel::onStopClicked,
+                            onSettingsClicked = { bottomSheetState.show() }
+                        )
+                    }
                 }
             }
         }
@@ -88,6 +104,7 @@ fun MainScreen(
     onPlayButtonClicked: () -> Unit,
     onPhaseClicked: (Phase, PhaseCardEvent) -> Unit,
     onStopClicked: () -> Unit,
+    onSettingsClicked: () -> Unit,
 ) {
 
     val canPlay = state is EditState || (state is InProgressState && state.isPaused)
@@ -97,6 +114,11 @@ fun MainScreen(
             backgroundColor = MaterialTheme.colors.surface,
             title = { Text(stringResource(id = R.string.app_name)) },
             elevation = 0.dp,
+            actions = {
+                if (state is EditState) IconButton(onClick = onSettingsClicked) {
+                    Icon(asset = Icons.Default.Settings)
+                }
+            }
         )
         Box(modifier = Modifier.fillMaxSize()) {
             ScrollableColumn {
@@ -142,6 +164,28 @@ fun MainScreen(
     }
 }
 
+@Composable
+fun BottomSheet() {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(8.dp),
+            style = MaterialTheme.typography.h5,
+            text = "Settings",
+        )
+
+        val debugText = if (BuildConfig.BUILD_TYPE == "debug") " (debug)" else ""
+        val caption =
+            "${stringResource(id = R.string.app_name)} v${BuildConfig.VERSION_CODE}${debugText}"
+        Text(
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            style = MaterialTheme.typography.caption.copy(fontStyle = FontStyle.Italic),
+            text = caption,
+        )
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun Preview() {
@@ -151,6 +195,15 @@ fun Preview() {
             onPlayButtonClicked = {},
             onPhaseClicked = { _, _ -> },
             onStopClicked = {},
+            onSettingsClicked = {}
         )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewBottomSheet() {
+    WorkoutTimerTheme {
+        BottomSheet()
     }
 }
