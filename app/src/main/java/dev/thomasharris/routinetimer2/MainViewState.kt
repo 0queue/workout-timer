@@ -1,5 +1,7 @@
 package dev.thomasharris.routinetimer2
 
+import kotlin.math.floor
+
 sealed class MainViewState {
     abstract val phases: Phases
 }
@@ -8,13 +10,6 @@ data class EditState(
     override val phases: Phases,
 ) : MainViewState()
 
-// to generate in progress state:
-// PREP
-// FOR EACH SET-1
-//   WORK
-//   REST
-// WORK
-// Each Step is a Phase plus a Progress plus a MaxNanos
 data class Step(
     val phase: Phase,
     val maxNanos: Long,
@@ -36,7 +31,19 @@ data class InProgressState(
     }
 }
 
-fun EditState.toInProgressState2(): InProgressState {
+sealed class Event {
+    data class SecondsRemaining(val seconds: Int) : Event()
+
+    data class MoveToPhase(val phase: Phase) : Event()
+
+    object Done : Event()
+
+    object Start : Event()
+
+    object LastSet : Event()
+}
+
+fun EditState.toInProgressState(): InProgressState {
 
     val steps = mutableListOf(
         Step(Phase.PREP, phases.prepTimeSeconds.nanos)
@@ -83,42 +90,66 @@ sealed class Action {
     object Stop : Action()
 }
 
-fun MainViewState.accept(action: Action): MainViewState {
+fun MainViewState.accept(action: Action): Pair<MainViewState, Event?> {
     return when (val state = this) {
         is EditState -> state.accept(action)
         is InProgressState -> when (action) {
             is Action.Frame -> {
                 when {
-                    state.lastTime == null -> state
-                    state.isDone -> EditState(state.phases)
+                    state.lastTime == null -> state to null
+                    state.isDone -> EditState(state.phases) to Event.Done
                     state.progress >= 1f -> {
-                        state.pop().copy(progress = 0f)
+                        state.pop().copy(progress = 0f).let { ips ->
+                            ips to ips.steps.firstOrNull()?.phase?.let { phase ->
+                                val setsRemaining = ips.steps
+                                    .filter { it.phase == Phase.WORK }
+                                    .count()
+
+                                if (phase == Phase.WORK && setsRemaining == 1)
+                                    Event.LastSet
+                                else
+                                    Event.MoveToPhase(phase)
+                            }
+                        }
                     }
                     state.current != null -> {
+                        // TODO move out somewhere
                         val deltaT = action.nanos - state.lastTime
                         val percentProgress =
                             deltaT.toFloat() / state.current.maxNanos.toFloat()
 
+                        val newProgress = state.progress + percentProgress
+
+                        val lastSecond =
+                            ((state.current.maxNanos / 1_000_000_000L) * (1f - state.progress))
+                                .let(::floor)
+                                .toInt()
+                        val curSecond =
+                            ((state.current.maxNanos / 1_000_000_000L) * (1f - newProgress))
+                                .let(::floor)
+                                .toInt()
+
+                        val event = if (lastSecond != curSecond && curSecond in (0..2)) {
+                            Event.SecondsRemaining(curSecond + 1)
+                        } else null
+
+
                         state.copy(
-                            progress = state.progress + percentProgress,
+                            progress = newProgress,
                             lastTime = action.nanos
-                        )
+                        ) to event
                     }
-                    else -> state
+                    else -> state to null
                 }
             }
-            is Action.PlayPause -> {
-                state.copy(lastTime = if (state.isPaused) System.nanoTime() else null)
-            }
-            is Action.Stop -> {
-                EditState(state.phases)
-            }
-            else -> state
+            is Action.PlayPause -> state.copy(lastTime = if (state.isPaused) System.nanoTime() else null) to null
+            is Action.Stop -> EditState(state.phases) to null
+            else -> state to null
         }
     }
 }
 
-fun EditState.accept(action: Action): MainViewState {
+fun EditState.accept(action: Action): Pair<MainViewState, Event?> {
     return when (action) {
         is Action.Increment -> {
             val increment = if (action.phase == Phase.SETS) 1 else 5
@@ -130,7 +161,7 @@ fun EditState.accept(action: Action): MainViewState {
                 Phase.SETS -> phases.copy(sets = phases.sets + increment)
             }
 
-            copy(phases = newPhases)
+            copy(phases = newPhases) to null
         }
         is Action.Decrement -> {
             val decrement = if (action.phase == Phase.SETS) 1 else 5
@@ -151,10 +182,10 @@ fun EditState.accept(action: Action): MainViewState {
                 else phases
             }
 
-            copy(phases = newPhases)
+            copy(phases = newPhases) to null
         }
-        is Action.PlayPause -> toInProgressState2()
-        else -> this // TODO
+        is Action.PlayPause -> toInProgressState() to Event.Start
+        else -> this to null
     }
 }
 
