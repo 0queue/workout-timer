@@ -4,19 +4,28 @@ import android.os.Handler
 import android.os.Looper
 import android.view.Choreographer
 import dev.thomasharris.workouttimer.ui.PhaseCardEvent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 import java.util.concurrent.CountDownLatch
 
 class MainViewModel {
 
     private val mainChoreographer: Choreographer
 
+    private val scope = CoroutineScope(Dispatchers.Default)
+
     init {
         // taken from AndroidAnimationClock
+        // TODO move away from choreographer, it really only is for ui
+        //   Although I want nice animations on the progress bar, I also
+        //   want the timer to run in the background, or with screen off
+        //   This actually works in the emulator but not on my own device,
+        //   and most likely not others as well
         if (Looper.myLooper() == Looper.getMainLooper()) {
             mainChoreographer = Choreographer.getInstance()
         } else {
@@ -53,8 +62,9 @@ class MainViewModel {
             if (state is InProgressState && !state.isPaused)
                 mainChoreographer.postFrameCallback(frameCallback)
 
-            if (event != null)
-                _eventFlow.sendBlocking(event)
+            if (event != null) scope.launch {
+                _eventFlow.send(event)
+            }
 
             state
         }
@@ -66,8 +76,9 @@ class MainViewModel {
                 mainChoreographer.postFrameCallback(frameCallback)
             }
 
-            if (event != null)
-                _eventFlow.sendBlocking(event)
+            if (event != null) scope.launch {
+                _eventFlow.send(event)
+            }
 
             state
         }
@@ -78,8 +89,9 @@ class MainViewModel {
             PhaseCardEvent.INCREMENT -> _stateFlow.value.accept(Action.Increment(phase))
             PhaseCardEvent.DECREMENT -> _stateFlow.value.accept(Action.Decrement(phase))
         }.let { (state, event) ->
-            if (event != null)
-                _eventFlow.sendBlocking(event)
+            if (event != null) scope.launch {
+                _eventFlow.send(event)
+            }
 
             state
         }
@@ -87,8 +99,9 @@ class MainViewModel {
 
     fun onStopClicked() {
         _stateFlow.value = _stateFlow.value.accept(Action.Stop).let { (state, event) ->
-            if (event != null)
-                _eventFlow.sendBlocking(event)
+            if (event != null) scope.launch {
+                _eventFlow.send(event)
+            }
 
             state
         }
