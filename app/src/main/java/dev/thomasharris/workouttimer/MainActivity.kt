@@ -166,11 +166,12 @@ fun MainScreen(
             }
 
             if (state is InProgressState)
-                IconButton(
+                PlayButton(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(16.dp),
-                    onClick = onStopClicked
+                    onClick = onStopClicked,
+                    color = MaterialTheme.colors.secondary,
                 ) {
                     Icon(
                         modifier = Modifier.padding(4.dp),
