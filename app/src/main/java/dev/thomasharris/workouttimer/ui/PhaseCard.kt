@@ -1,4 +1,4 @@
-package dev.thomasharris.routinetimer2.ui
+package dev.thomasharris.workouttimer.ui
 
 import androidx.compose.foundation.AmbientContentColor
 import androidx.compose.foundation.Text
@@ -26,11 +26,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.ui.tooling.preview.Preview
-import dev.thomasharris.routinetimer2.EditState
-import dev.thomasharris.routinetimer2.InProgressState
-import dev.thomasharris.routinetimer2.MainViewModel
-import dev.thomasharris.routinetimer2.MainViewState
-import dev.thomasharris.routinetimer2.Phase
+import dev.thomasharris.workouttimer.EditState
+import dev.thomasharris.workouttimer.InProgressState
+import dev.thomasharris.workouttimer.MainViewModel
+import dev.thomasharris.workouttimer.MainViewState
+import dev.thomasharris.workouttimer.Phase
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 
@@ -128,7 +128,7 @@ fun VectorAsset.scale(scale: Float): VectorAsset =
 
 val Phase.displayName: String
     get() = when (this) {
-        Phase.PREP -> "Preparation"
+        Phase.PREP -> "Preparation" // TODO str resources
         Phase.WORK -> "Work"
         Phase.REST -> "Rest"
         Phase.SETS -> "Sets"

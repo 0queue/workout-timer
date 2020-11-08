@@ -1,9 +1,8 @@
-package dev.thomasharris.routinetimer2.ui
+package dev.thomasharris.workouttimer.ui
 
 import androidx.compose.foundation.InteractionState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.preferredSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ButtonConstants
 import androidx.compose.material.ButtonElevation
@@ -18,7 +17,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import androidx.ui.tooling.preview.Preview
 
 /**

@@ -1,11 +1,11 @@
-package dev.thomasharris.routinetimer2
+package dev.thomasharris.workouttimer
 
 import android.app.Application
 import androidx.appcompat.app.AppCompatActivity
 
-class RoutineTimer2Application : Application() {
+class WorkoutTimer : Application() {
     val mainViewModel = MainViewModel()
 }
 
 val AppCompatActivity.mainViewModel: MainViewModel
-    get() = (applicationContext as RoutineTimer2Application).mainViewModel
+    get() = (applicationContext as WorkoutTimer).mainViewModel

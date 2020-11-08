@@ -1,4 +1,4 @@
-package dev.thomasharris.routinetimer2
+package dev.thomasharris.workouttimer
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

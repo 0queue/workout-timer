@@ -1,4 +1,4 @@
-package dev.thomasharris.routinetimer2
+package dev.thomasharris.workouttimer
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -31,12 +31,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import androidx.ui.tooling.preview.Preview
-import dev.thomasharris.routinetimer2.ui.PhaseCard
-import dev.thomasharris.routinetimer2.ui.PhaseCardEvent
-import dev.thomasharris.routinetimer2.ui.PlayButton
-import dev.thomasharris.routinetimer2.ui.displayName
-import dev.thomasharris.routinetimer2.ui.scale
-import dev.thomasharris.routinetimer2.ui.theme.RoutineTimer2Theme
+import dev.thomasharris.workouttimer.ui.PhaseCard
+import dev.thomasharris.workouttimer.ui.PhaseCardEvent
+import dev.thomasharris.workouttimer.ui.PlayButton
+import dev.thomasharris.workouttimer.ui.displayName
+import dev.thomasharris.workouttimer.ui.scale
+import dev.thomasharris.workouttimer.ui.theme.WorkoutTimerTheme
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -66,9 +66,7 @@ class MainActivity : AppCompatActivity() {
         setContent {
             val state by mainViewModel.stateFlow.collectAsState()
 
-            AnimationClockAmbient
-
-            RoutineTimer2Theme {
+            WorkoutTimerTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
                     MainScreen(
@@ -147,7 +145,7 @@ fun MainScreen(
 @Preview(showBackground = true)
 @Composable
 fun Preview() {
-    RoutineTimer2Theme {
+    WorkoutTimerTheme {
         MainScreen(
             state = MainViewModel().stateFlow.value,
             onPlayButtonClicked = {},

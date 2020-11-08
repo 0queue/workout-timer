@@ -1,4 +1,4 @@
-package dev.thomasharris.routinetimer2
+package dev.thomasharris.workouttimer
 
 import android.content.Context
 import android.os.Bundle

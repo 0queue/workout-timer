@@ -1,24 +1,17 @@
-package dev.thomasharris.routinetimer2
+package dev.thomasharris.workouttimer
 
 import android.os.Handler
 import android.os.Looper
 import android.view.Choreographer
-import dev.thomasharris.routinetimer2.ui.PhaseCardEvent
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import dev.thomasharris.workouttimer.ui.PhaseCardEvent
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.replay
 import java.util.concurrent.CountDownLatch
 
 class MainViewModel {
-
-    private val scope = CoroutineScope(Dispatchers.Default)
 
     private val mainChoreographer: Choreographer
 
@@ -43,7 +36,7 @@ class MainViewModel {
 
     private val _stateFlow: MutableStateFlow<MainViewState> = MutableStateFlow(EditState(Phases(
         prepTimeSeconds = 5,
-        workTimeSeconds = 5,
+        workTimeSeconds = 30,
         restTimeSeconds = 5,
         sets = 3,
     )))
