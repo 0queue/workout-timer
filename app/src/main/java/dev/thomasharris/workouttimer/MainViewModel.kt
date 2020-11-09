@@ -11,18 +11,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
-class MainViewModel {
+class MainViewModel(
+    private val wakeLocker: WakeLocker,
+) {
 
     private val scope = CoroutineScope(Dispatchers.Default)
     private var job: Job? = null
 
 
-    private val _stateFlow: MutableStateFlow<MainViewState> = MutableStateFlow(EditState(Phases(
-        prepTimeSeconds = 5,
-        workTimeSeconds = 30,
-        restTimeSeconds = 5,
-        sets = 3,
-    )))
+    private val _stateFlow: MutableStateFlow<MainViewState> = MutableStateFlow(DEFAULT_STATE)
     val stateFlow = _stateFlow.asStateFlow()
 
     private val _eventFlow = Channel<Event>()
@@ -59,12 +56,16 @@ class MainViewModel {
                 is Event.Resume, Event.Start -> {
                     if (job == null) job = scope.launch {
                         try {
+                            // stay awake while timing
+                            // is cancelled when the user
+                            // pauses, stops, or finishes the exercise
+                            wakeLocker.lock()
                             while (true) {
                                 delay(8)
                                 dispatchFrame(System.nanoTime())
                             }
                         } finally {
-                            // pass
+                            wakeLocker.unlock()
                         }
                     }
 
@@ -78,5 +79,14 @@ class MainViewModel {
         }
 
         return first
+    }
+
+    companion object {
+        val DEFAULT_STATE = EditState(Phases(
+            prepTimeSeconds = 5,
+            workTimeSeconds = 30,
+            restTimeSeconds = 5,
+            sets = 3,
+        ))
     }
 }

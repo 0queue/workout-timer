@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="dev.thomasharris.workouttimer">
 
+    <!--  keep the system awake during boring exercise routines  -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
     <application
         android:name=".WorkoutTimerApplication"
         android:allowBackup="true"

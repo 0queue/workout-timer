@@ -120,7 +120,7 @@ fun PhaseCard(
 @Composable
 @Preview
 fun PhaseCardPreview() {
-    val state = MainViewModel().stateFlow.value
+    val state = MainViewModel.DEFAULT_STATE
     PhaseCard(state = state, phase = Phase.PREP, onClick = {})
 }
 

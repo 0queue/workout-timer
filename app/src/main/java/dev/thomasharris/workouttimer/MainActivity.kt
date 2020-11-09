@@ -255,7 +255,7 @@ fun NightModeRadioButton(
 fun Preview() {
     WorkoutTimerTheme {
         MainScreen(
-            state = MainViewModel().stateFlow.value,
+            state = MainViewModel.DEFAULT_STATE,
             onPlayButtonClicked = {},
             onPhaseClicked = { _, _ -> },
             onStopClicked = {},

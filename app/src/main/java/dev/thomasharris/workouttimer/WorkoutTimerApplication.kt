@@ -9,7 +9,7 @@ import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 
 class WorkoutTimerApplication : Application() {
-    val mainViewModel = MainViewModel()
+    val mainViewModel by lazy { MainViewModel(AndroidWakeLocker(this)) }
     private val prefsManager by lazy { PrefsManager(this) }
     val settingsViewModel by lazy { SettingsViewModel(prefsManager) }
 
