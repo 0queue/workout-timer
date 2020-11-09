@@ -49,6 +49,8 @@ class MainViewModel {
 
     private fun Pair<MainViewState, Event?>.handle(): MainViewState {
         second?.let { event ->
+            // TODO restructure handle() to update state then handle events,
+            //  because events could cause further state updates!
             when (event) {
                 is Event.Pause, Event.Done, Event.Stop -> {
                     job?.cancel()
@@ -58,8 +60,8 @@ class MainViewModel {
                     if (job == null) job = scope.launch {
                         try {
                             while (true) {
-                                dispatchFrame(System.nanoTime())
                                 delay(8)
+                                dispatchFrame(System.nanoTime())
                             }
                         } finally {
                             // pass
