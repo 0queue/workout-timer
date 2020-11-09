@@ -36,9 +36,20 @@ sealed class Event {
 
     data class MoveToPhase(val phase: Phase) : Event()
 
+    // naturally reached the end
     object Done : Event()
 
+    // started from the top
     object Start : Event()
+
+    // pause in progress
+    object Pause : Event()
+
+    // resume in progress
+    object Resume : Event()
+
+    // stopped in progress
+    object Stop : Event()
 
     object LastSet : Event()
 }
@@ -142,8 +153,9 @@ fun MainViewState.accept(action: Action): Pair<MainViewState, Event?> {
                     else -> state to null
                 }
             }
-            is Action.PlayPause -> state.copy(lastTime = if (state.isPaused) System.nanoTime() else null) to null
-            is Action.Stop -> EditState(state.phases) to null
+            is Action.PlayPause -> state.copy(lastTime = if (state.isPaused) System.nanoTime() else null)
+                .let { it to if (it.isPaused) Event.Pause else Event.Resume }
+            is Action.Stop -> EditState(state.phases) to Event.Stop
             else -> state to null
         }
     }

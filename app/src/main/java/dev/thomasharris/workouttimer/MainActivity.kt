@@ -68,6 +68,7 @@ class MainActivity : AppCompatActivity() {
                     Event.Done -> ttsManager.speak("Done")
                     Event.Start -> ttsManager.speak("Ready")
                     Event.LastSet -> ttsManager.speak("Last Set")
+                    else -> Unit
                 }
             }
         }
