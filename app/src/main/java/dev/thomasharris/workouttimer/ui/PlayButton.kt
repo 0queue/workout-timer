@@ -30,6 +30,7 @@ fun PlayButton(
     color: Color = MaterialTheme.colors.primary,
     interactionState: InteractionState = remember { InteractionState() },
     elevation: ButtonElevation = ButtonConstants.defaultElevation(),
+    enabled: Boolean = true,
     icon: @Composable () -> Unit
 ) {
     Surface(
@@ -39,7 +40,11 @@ fun PlayButton(
         modifier = modifier
     ) {
         Box(
-            Modifier.clickable(onClick = onClick, interactionState = interactionState),
+            Modifier.clickable(
+                onClick = onClick,
+                interactionState = interactionState,
+                enabled = enabled
+            ),
             alignment = Alignment.Center,
             children = {
                 icon()

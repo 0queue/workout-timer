@@ -77,6 +77,7 @@ class MainActivity : AppCompatActivity() {
         setContent {
             val mainViewState by mainViewModel.stateFlow.collectAsState()
             val settingsState by settingsViewModel.stateFlow.collectAsState(SettingsViewModel.State.UNINITIALIZED)
+            val ttsState by ttsManager.isReady.collectAsState()
 
             WorkoutTimerTheme {
                 // A surface container using the 'background' color from the theme
@@ -99,7 +100,8 @@ class MainActivity : AppCompatActivity() {
                             onPlayButtonClicked = mainViewModel::onToggle,
                             onPhaseClicked = mainViewModel::onPhaseClicked,
                             onStopClicked = mainViewModel::onStopClicked,
-                            onSettingsClicked = { bottomSheetState.show() }
+                            onSettingsClicked = { bottomSheetState.show() },
+                            ttsReady = ttsState
                         )
                     }
                 }
@@ -120,6 +122,7 @@ class MainActivity : AppCompatActivity() {
 @Composable
 fun MainScreen(
     state: MainViewState,
+    ttsReady: Boolean,
     onPlayButtonClicked: () -> Unit,
     onPhaseClicked: (Phase, PhaseCardEvent) -> Unit,
     onStopClicked: () -> Unit,
@@ -159,6 +162,7 @@ fun MainScreen(
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 16.dp),
                 onClick = onPlayButtonClicked,
+                enabled = if (state is EditState) ttsReady else true
             ) {
                 val icon = if (canPlay) Icons.Default.PlayArrow else Icons.Default.Pause
                 Icon(
@@ -262,7 +266,8 @@ fun Preview() {
             onPlayButtonClicked = {},
             onPhaseClicked = { _, _ -> },
             onStopClicked = {},
-            onSettingsClicked = {}
+            onSettingsClicked = {},
+            ttsReady = true
         )
     }
 }
