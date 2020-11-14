@@ -6,7 +6,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
@@ -17,7 +16,11 @@ class TimerViewModel(
     private val scope = CoroutineScope(Dispatchers.Default)
     private var job: Job? = null
 
-    private val machine = TimerStateMachine()
+    private val machine =
+        StateMachine<Action, TimerViewState, Event>(DEFAULT_STATE) { state, action ->
+            state.accept(action)
+        }
+
     val stateFlow = machine.stateFlow
     val eventFlow = machine.eventFlow.onEach { event ->
 
