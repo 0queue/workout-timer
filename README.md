@@ -12,5 +12,5 @@ Jetpack Compose for the UI.
 - nicer landscape layout than a list
 - kotlinify app/build.gradle when it works again
 - Organize code a lot better
-- async pref loading/setting (for night mode)
+- ~~async pref loading/setting (for night mode)~~
 - draw behind status bar (Claw for Lobsters can, why not compose)

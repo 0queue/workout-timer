@@ -1,14 +1,14 @@
-package dev.thomasharris.workouttimer
+package dev.thomasharris.workouttimer.timer
 
 import kotlin.math.floor
 
-sealed class MainViewState {
+sealed class TimerViewState {
     abstract val phases: Phases
 }
 
 data class EditState(
     override val phases: Phases,
-) : MainViewState()
+) : TimerViewState()
 
 data class Step(
     val phase: Phase,
@@ -20,7 +20,7 @@ data class InProgressState(
     val steps: List<Step>,
     val progress: Float,
     val lastTime: Long? = null,
-) : MainViewState() {
+) : TimerViewState() {
     val current = steps.firstOrNull()
     val isDone = steps.isEmpty()
     val isPaused = lastTime == null
@@ -101,7 +101,7 @@ sealed class Action {
     object Stop : Action()
 }
 
-fun MainViewState.accept(action: Action): Pair<MainViewState, Event?> {
+fun TimerViewState.accept(action: Action): Pair<TimerViewState, Event?> {
     return when (val state = this) {
         is EditState -> state.accept(action)
         is InProgressState -> when (action) {
@@ -161,7 +161,7 @@ fun MainViewState.accept(action: Action): Pair<MainViewState, Event?> {
     }
 }
 
-fun EditState.accept(action: Action): Pair<MainViewState, Event?> {
+fun EditState.accept(action: Action): Pair<TimerViewState, Event?> {
     return when (action) {
         is Action.Increment -> {
             val increment = if (action.phase == Phase.SETS) 1 else 5

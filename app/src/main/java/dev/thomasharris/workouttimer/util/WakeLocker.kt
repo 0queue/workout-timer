@@ -1,4 +1,4 @@
-package dev.thomasharris.workouttimer
+package dev.thomasharris.workouttimer.util
 
 import android.content.Context
 import android.os.PowerManager

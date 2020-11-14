@@ -1,5 +1,6 @@
-package dev.thomasharris.workouttimer
+package dev.thomasharris.workouttimer.timer
 
+import dev.thomasharris.workouttimer.util.WakeLocker
 import dev.thomasharris.workouttimer.ui.PhaseCardEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -11,7 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
-class MainViewModel(
+class TimerViewModel(
     private val wakeLocker: WakeLocker,
 ) {
 
@@ -19,7 +20,7 @@ class MainViewModel(
     private var job: Job? = null
 
 
-    private val _stateFlow: MutableStateFlow<MainViewState> = MutableStateFlow(DEFAULT_STATE)
+    private val _stateFlow: MutableStateFlow<TimerViewState> = MutableStateFlow(DEFAULT_STATE)
     val stateFlow = _stateFlow.asStateFlow()
 
     private val _eventFlow = Channel<Event>()
@@ -44,7 +45,7 @@ class MainViewModel(
         _stateFlow.value = _stateFlow.value.accept(Action.Stop).handle()
     }
 
-    private fun Pair<MainViewState, Event?>.handle(): MainViewState {
+    private fun Pair<TimerViewState, Event?>.handle(): TimerViewState {
         second?.let { event ->
             // TODO restructure handle() to update state then handle events,
             //  because events could cause further state updates!

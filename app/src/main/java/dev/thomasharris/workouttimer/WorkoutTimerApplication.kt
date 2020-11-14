@@ -7,8 +7,10 @@ import androidx.compose.animation.core.DefaultAnimationClock
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
+import dev.thomasharris.workouttimer.timer.TimerViewModel
 import dev.thomasharris.workouttimer.settings.PrefsManager
 import dev.thomasharris.workouttimer.settings.SettingsViewModel
+import dev.thomasharris.workouttimer.util.AndroidWakeLocker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -16,14 +18,14 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class WorkoutTimerApplication : Application() {
-    val mainViewModel by lazy { MainViewModel(AndroidWakeLocker(this)) }
+    val timerViewModel by lazy { TimerViewModel(AndroidWakeLocker(this)) }
     private val prefsManager by lazy { PrefsManager(this) }
     val settingsViewModel by lazy { SettingsViewModel(prefsManager) }
 
     private val scope = CoroutineScope(Dispatchers.Main)
 
     @OptIn(ExperimentalMaterialApi::class)
-    val bottomSheetState = ModalBottomSheetState(
+    val settingsSheetState = ModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         clock = DefaultAnimationClock(),
     )
@@ -43,12 +45,12 @@ class WorkoutTimerApplication : Application() {
     }
 }
 
-val AppCompatActivity.mainViewModel: MainViewModel
-    get() = (applicationContext as WorkoutTimerApplication).mainViewModel
+val AppCompatActivity.timerViewModel: TimerViewModel
+    get() = (applicationContext as WorkoutTimerApplication).timerViewModel
 
 val AppCompatActivity.settingsViewModel: SettingsViewModel
     get() = (applicationContext as WorkoutTimerApplication).settingsViewModel
 
 @OptIn(ExperimentalMaterialApi::class)
-val AppCompatActivity.bottomSheetState: ModalBottomSheetState
-    get() = (applicationContext as WorkoutTimerApplication).bottomSheetState
+val AppCompatActivity.settingsSheetState: ModalBottomSheetState
+    get() = (applicationContext as WorkoutTimerApplication).settingsSheetState
