@@ -40,6 +40,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import androidx.ui.tooling.preview.Preview
+import dev.thomasharris.workouttimer.settings.SettingsViewModel
 import dev.thomasharris.workouttimer.ui.PhaseCard
 import dev.thomasharris.workouttimer.ui.PhaseCardEvent
 import dev.thomasharris.workouttimer.ui.PlayButton
@@ -75,7 +76,7 @@ class MainActivity : AppCompatActivity() {
 
         setContent {
             val mainViewState by mainViewModel.stateFlow.collectAsState()
-            val settingsState by settingsViewModel.stateFlow.collectAsState()
+            val settingsState by settingsViewModel.stateFlow.collectAsState(SettingsViewModel.State.UNINITIALIZED)
 
             WorkoutTimerTheme {
                 // A surface container using the 'background' color from the theme
@@ -234,6 +235,7 @@ fun NightModeRadioButton(
                 .padding(4.dp)
                 .align(Alignment.CenterVertically),
             selected = state.nightMode == nightMode,
+            enabled = state.nightMode != null,
             onClick = { onNightModeSelected(nightMode) }
         )
         Text(
@@ -242,6 +244,7 @@ fun NightModeRadioButton(
                     interactionState = interactionState,
                     indication = null,
                     onClick = { onNightModeSelected(nightMode) },
+                    enabled = state.nightMode != null,
                 )
                 .padding(4.dp)
                 .align(Alignment.CenterVertically),

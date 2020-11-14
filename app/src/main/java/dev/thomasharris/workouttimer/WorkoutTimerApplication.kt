@@ -7,11 +7,20 @@ import androidx.compose.animation.core.DefaultAnimationClock
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
+import dev.thomasharris.workouttimer.settings.PrefsManager
+import dev.thomasharris.workouttimer.settings.SettingsViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 class WorkoutTimerApplication : Application() {
     val mainViewModel by lazy { MainViewModel(AndroidWakeLocker(this)) }
     private val prefsManager by lazy { PrefsManager(this) }
     val settingsViewModel by lazy { SettingsViewModel(prefsManager) }
+
+    private val scope = CoroutineScope(Dispatchers.Main)
 
     @OptIn(ExperimentalMaterialApi::class)
     val bottomSheetState = ModalBottomSheetState(
@@ -22,8 +31,15 @@ class WorkoutTimerApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        settingsViewModel.stateFlow.value.nightMode.toMode()
-            .let(AppCompatDelegate::setDefaultNightMode)
+        scope.launch {
+            settingsViewModel.register()
+            settingsViewModel.stateFlow.collect {
+                delay(150) // short delay to let button animation finish
+                it.nightMode
+                    ?.toMode()
+                    ?.let(AppCompatDelegate::setDefaultNightMode)
+            }
+        }
     }
 }
 
