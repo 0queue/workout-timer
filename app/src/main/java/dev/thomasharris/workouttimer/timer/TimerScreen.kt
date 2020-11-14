@@ -34,7 +34,7 @@ import dev.thomasharris.workouttimer.ui.theme.WorkoutTimerTheme
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun TimerScreen(
-    state: TimerViewState,
+    state: TimerState,
     ttsReady: Boolean,
     onPlayButtonClicked: () -> Unit,
     onPhaseClicked: (Phase, PhaseCardEvent) -> Unit,

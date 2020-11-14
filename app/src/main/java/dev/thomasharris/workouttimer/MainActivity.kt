@@ -12,7 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.setContent
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
-import dev.thomasharris.workouttimer.timer.Event
+import dev.thomasharris.workouttimer.timer.TimerEvent
 import dev.thomasharris.workouttimer.timer.TimerScreen
 import dev.thomasharris.workouttimer.settings.SettingsSheet
 import dev.thomasharris.workouttimer.settings.SettingsViewState
@@ -36,11 +36,11 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             timerViewModel.eventFlow.collect { event ->
                 when (event) {
-                    is Event.SecondsRemaining -> ttsManager.speak(event.seconds.toString())
-                    is Event.MoveToPhase -> ttsManager.speak(event.phase.displayName)
-                    Event.Done -> ttsManager.speak("Done")
-                    Event.Start -> ttsManager.speak("Ready")
-                    Event.LastSet -> ttsManager.speak("Last Set")
+                    is TimerEvent.SecondsRemaining -> ttsManager.speak(event.seconds.toString())
+                    is TimerEvent.MoveToPhase -> ttsManager.speak(event.phase.displayName)
+                    TimerEvent.Done -> ttsManager.speak("Done")
+                    TimerEvent.Start -> ttsManager.speak("Ready")
+                    TimerEvent.LastSet -> ttsManager.speak("Last Set")
                     else -> Unit
                 }
             }

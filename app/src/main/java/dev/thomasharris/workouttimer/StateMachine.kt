@@ -1,4 +1,4 @@
-package dev.thomasharris.workouttimer.timer
+package dev.thomasharris.workouttimer
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel

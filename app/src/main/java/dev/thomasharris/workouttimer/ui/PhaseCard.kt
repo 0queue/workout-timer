@@ -29,7 +29,7 @@ import androidx.ui.tooling.preview.Preview
 import dev.thomasharris.workouttimer.timer.EditState
 import dev.thomasharris.workouttimer.timer.InProgressState
 import dev.thomasharris.workouttimer.timer.TimerViewModel
-import dev.thomasharris.workouttimer.timer.TimerViewState
+import dev.thomasharris.workouttimer.timer.TimerState
 import dev.thomasharris.workouttimer.timer.Phase
 import kotlin.math.ceil
 import kotlin.math.roundToInt
@@ -37,7 +37,7 @@ import kotlin.math.roundToInt
 
 @Composable
 fun PhaseCard(
-    state: TimerViewState,
+    state: TimerState,
     phase: Phase,
     onClick: (PhaseCardEvent) -> Unit,
     modifier: Modifier = Modifier,
@@ -140,7 +140,7 @@ val Phase.displayName: String
         Phase.SETS -> "Sets"
     }
 
-fun TimerViewState.valueOfFormatted(phase: Phase): String {
+fun TimerState.valueOfFormatted(phase: Phase): String {
     var n = when (phase) {
         Phase.PREP -> phases.prepTimeSeconds
         Phase.WORK -> phases.workTimeSeconds

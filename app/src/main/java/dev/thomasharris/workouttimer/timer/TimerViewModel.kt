@@ -1,7 +1,8 @@
 package dev.thomasharris.workouttimer.timer
 
-import dev.thomasharris.workouttimer.util.WakeLocker
+import dev.thomasharris.workouttimer.StateMachine
 import dev.thomasharris.workouttimer.ui.PhaseCardEvent
+import dev.thomasharris.workouttimer.util.WakeLocker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -16,20 +17,16 @@ class TimerViewModel(
     private val scope = CoroutineScope(Dispatchers.Default)
     private var job: Job? = null
 
-    private val machine =
-        StateMachine<Action, TimerViewState, Event>(DEFAULT_STATE) { state, action ->
-            state.accept(action)
-        }
+    private val machine = StateMachine(DEFAULT_STATE, reducer = ::reducer)
 
     val stateFlow = machine.stateFlow
     val eventFlow = machine.eventFlow.onEach { event ->
-
         when (event) {
-            is Event.Pause, Event.Done, Event.Stop -> {
+            is TimerEvent.Pause, TimerEvent.Done, TimerEvent.Stop -> {
                 job?.cancel()
                 job = null
             }
-            is Event.Resume, Event.Start -> {
+            is TimerEvent.Resume, TimerEvent.Start -> {
                 if (job == null) job = scope.launch {
                     try {
                         // stay awake while timing
@@ -51,20 +48,20 @@ class TimerViewModel(
     }
 
     private suspend fun dispatchFrame(nanos: Long) {
-        machine.accept(Action.Frame(nanos))
+        machine.accept(TimerAction.Frame(nanos))
     }
 
     fun onToggle() {
         scope.launch {
-            machine.accept(Action.PlayPause)
+            machine.accept(TimerAction.PlayPause)
         }
     }
 
     fun onPhaseClicked(phase: Phase, phaseCardEvent: PhaseCardEvent) {
         scope.launch {
             when (phaseCardEvent) {
-                PhaseCardEvent.INCREMENT -> Action.Increment(phase)
-                PhaseCardEvent.DECREMENT -> Action.Decrement(phase)
+                PhaseCardEvent.INCREMENT -> TimerAction.Increment(phase)
+                PhaseCardEvent.DECREMENT -> TimerAction.Decrement(phase)
             }.let {
                 machine.accept(it)
             }
@@ -73,10 +70,9 @@ class TimerViewModel(
 
     fun onStopClicked() {
         scope.launch {
-            machine.accept(Action.Stop)
+            machine.accept(TimerAction.Stop)
         }
     }
-
 
     companion object {
         val DEFAULT_STATE = EditState(Phases(
