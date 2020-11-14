@@ -11,9 +11,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
+import androidx.ui.tooling.preview.Preview
 import dev.thomasharris.workouttimer.BuildConfig
 import dev.thomasharris.workouttimer.R
 import dev.thomasharris.workouttimer.ui.NightModeRadioButton
+import dev.thomasharris.workouttimer.ui.theme.WorkoutTimerTheme
 
 @Composable
 fun SettingsSheet(
@@ -49,5 +51,16 @@ fun SettingsSheet(
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewSettingsSheet() {
+    WorkoutTimerTheme {
+        SettingsSheet(
+            settingsViewState = SettingsViewState(nightMode = SettingsViewState.NightMode.System),
+            onNightModeSelected = {},
+        )
     }
 }
