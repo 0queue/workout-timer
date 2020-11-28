@@ -51,10 +51,12 @@ infix fun InProgressState.reduce(action: TimerAction) = when (action) {
     is TimerAction.Frame -> {
         when {
             lastTime == null -> this to null
-            isDone -> EditState(phases) to TimerEvent.Done
+            isDone -> EditState(phases) to TimerEvent.Done // this branch is probably redundant
             progress >= 1f -> {
                 pop().copy(progress = 0f).let { ips ->
-                    ips to ips.steps.firstOrNull()?.phase?.let { phase ->
+                    if (ips.isDone)
+                        EditState(phases) to TimerEvent.Done
+                    else ips to ips.steps.firstOrNull()?.phase?.let { phase ->
                         val setsRemaining = ips.steps
                             .filter { it.phase == Phase.WORK }
                             .count()

@@ -1,5 +1,9 @@
 package dev.thomasharris.workouttimer.timer
 
+import androidx.compose.animation.core.FloatPropKey
+import androidx.compose.animation.core.transitionDefinition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.transition
 import androidx.compose.foundation.ScrollableColumn
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.Box
@@ -21,6 +25,7 @@ import androidx.compose.material.icons.filled.Stop
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawOpacity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.ui.tooling.preview.Preview
@@ -30,6 +35,23 @@ import dev.thomasharris.workouttimer.ui.PhaseCardEvent
 import dev.thomasharris.workouttimer.ui.PlayButton
 import dev.thomasharris.workouttimer.ui.scale
 import dev.thomasharris.workouttimer.ui.theme.WorkoutTimerTheme
+
+val scalePropKey = FloatPropKey()
+
+val scaleTransitionDefinition = transitionDefinition<Boolean> {
+    state(true) {
+        this[scalePropKey] = 1f
+    }
+
+    state(false) {
+        this[scalePropKey] = 0f
+    }
+
+    transition(true to false, false to true) {
+        scalePropKey using tween(durationMillis = 100)
+    }
+}
+
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -44,13 +66,21 @@ fun TimerScreen(
 
     val canPlay = state is EditState || (state is InProgressState && state.isPaused)
 
+    val scaleTransitionState = transition(
+        definition = scaleTransitionDefinition,
+        toState = state is InProgressState,
+    )
+
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
             backgroundColor = MaterialTheme.colors.surface,
             title = { Text(stringResource(id = R.string.app_name)) },
             elevation = 0.dp,
             actions = {
-                if (state is EditState) IconButton(onClick = onSettingsClicked) {
+                if ((1f - scaleTransitionState[scalePropKey]) > .1f) IconButton(
+                    onClick = onSettingsClicked,
+                    modifier = Modifier.drawOpacity(1f - scaleTransitionState[scalePropKey])
+                ) {
                     Icon(asset = Icons.Default.Settings)
                 }
             }
@@ -84,17 +114,22 @@ fun TimerScreen(
                 )
             }
 
-            if (state is InProgressState)
+            // TODO less math
+            // TODO find out the proper way to animate visibility changes
+            //   I dislike making it about a threshold during a transition
+            //   but it also kind of makes a lot of sense
+            if (scaleTransitionState[scalePropKey] > .1f)
                 PlayButton(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
-                        .padding(16.dp),
+                        .padding(16.dp + ((24 + 4) * (1f - scaleTransitionState[scalePropKey])).dp),
                     onClick = onStopClicked,
                     color = MaterialTheme.colors.secondary,
                 ) {
                     Icon(
-                        modifier = Modifier.padding(4.dp),
-                        asset = Icons.Default.Stop.scale(2f)
+                        modifier = Modifier
+                            .padding(4.dp),
+                        asset = Icons.Default.Stop.scale(2f * scaleTransitionState[scalePropKey])
                     )
                 }
         }

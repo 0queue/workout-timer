@@ -1,5 +1,9 @@
 package dev.thomasharris.workouttimer.ui
 
+import androidx.compose.animation.DpPropKey
+import androidx.compose.animation.core.transitionDefinition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.transition
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,12 +32,27 @@ import androidx.compose.ui.unit.sp
 import androidx.ui.tooling.preview.Preview
 import dev.thomasharris.workouttimer.timer.EditState
 import dev.thomasharris.workouttimer.timer.InProgressState
-import dev.thomasharris.workouttimer.timer.TimerViewModel
-import dev.thomasharris.workouttimer.timer.TimerState
 import dev.thomasharris.workouttimer.timer.Phase
+import dev.thomasharris.workouttimer.timer.TimerState
+import dev.thomasharris.workouttimer.timer.TimerViewModel
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 
+val elevationPropKey = DpPropKey()
+
+val elevationTransitionDefinition = transitionDefinition<Boolean> {
+    state(true) {
+        this[elevationPropKey] = 4.dp
+    }
+
+    state(false) {
+        this[elevationPropKey] = 0.dp
+    }
+
+    transition(true to false, false to true) {
+        elevationPropKey using tween(durationMillis = 100)
+    }
+}
 
 @Composable
 fun PhaseCard(
@@ -53,10 +72,15 @@ fun PhaseCard(
         else -> AmbientEmphasisLevels.current.high
     }
 
+    val elevationTransitionState = transition(
+        definition = elevationTransitionDefinition,
+        toState = state !is InProgressState || (state.current?.phase == phase),
+    )
+
     Card(
         modifier = modifier.fillMaxWidth().padding(16.dp),
         shape = RoundedCornerShape(8.dp),
-        elevation = 4.dp,
+        elevation = elevationTransitionState[elevationPropKey],
     ) {
         Box {
             Column(
