@@ -1,6 +1,7 @@
 package dev.thomasharris.workouttimer.ui
 
 import androidx.compose.animation.DpPropKey
+import androidx.compose.animation.core.FloatPropKey
 import androidx.compose.animation.core.transitionDefinition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.transition
@@ -23,8 +24,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowLeft
 import androidx.compose.material.icons.filled.ArrowRight
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawOpacity
 import androidx.compose.ui.graphics.vector.VectorAsset
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -37,10 +41,14 @@ import dev.thomasharris.workouttimer.timer.TimerState
 import dev.thomasharris.workouttimer.timer.TimerViewModel
 import kotlin.math.ceil
 import kotlin.math.roundToInt
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import dev.thomasharris.workouttimer.SMALL_ANIMATION_TIME_MS
 
-val elevationPropKey = DpPropKey()
+private val elevationPropKey = DpPropKey()
 
-val elevationTransitionDefinition = transitionDefinition<Boolean> {
+private val elevationTransitionDefinition = transitionDefinition<Boolean> {
     state(true) {
         this[elevationPropKey] = 4.dp
     }
@@ -50,7 +58,23 @@ val elevationTransitionDefinition = transitionDefinition<Boolean> {
     }
 
     transition(true to false, false to true) {
-        elevationPropKey using tween(durationMillis = 100)
+        elevationPropKey using tween(durationMillis = SMALL_ANIMATION_TIME_MS)
+    }
+}
+
+private val opacityPropKey = FloatPropKey()
+
+private val opacityTransitionDefinition = transitionDefinition<Boolean> {
+    state(true) {
+        this[opacityPropKey] = 1f
+    }
+
+    state(false) {
+        this[opacityPropKey] = 0f
+    }
+
+    transition(true to false, false to true) {
+        opacityPropKey using tween(durationMillis = SMALL_ANIMATION_TIME_MS)
     }
 }
 
@@ -76,6 +100,18 @@ fun PhaseCard(
         definition = elevationTransitionDefinition,
         toState = state !is InProgressState || (state.current?.phase == phase),
     )
+
+    val opacityTransitionState = transition(
+        definition = opacityTransitionDefinition,
+        toState = state is InProgressState && state.current?.phase == phase
+    )
+
+    var progress by remember {
+        mutableStateOf(0f)
+    }
+
+    if (state is InProgressState && state.current?.phase == phase)
+        progress = 1f - state.progress.coerceIn(0f, 1f)
 
     Card(
         modifier = modifier.fillMaxWidth().padding(16.dp),
@@ -130,12 +166,13 @@ fun PhaseCard(
             }
 
             // TODO custom progress indicator that is taller? .height doesn't seem to work
-            if (state is InProgressState && state.current?.phase == phase)
+            if (opacityTransitionState[opacityPropKey] > .1f)
                 LinearProgressIndicator(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
-                        .fillMaxWidth(),
-                    progress = 1f - state.progress.coerceIn(0f, 1f)
+                        .fillMaxWidth()
+                        .drawOpacity(opacityTransitionState[opacityPropKey]),
+                    progress = progress // 1f - state.progress.coerceIn(0f, 1f)
                 )
         }
     }

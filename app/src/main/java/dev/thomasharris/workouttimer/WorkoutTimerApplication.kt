@@ -17,6 +17,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
+// TODO this has to exist somewhere in compose already...
+const val SMALL_ANIMATION_TIME_MS = 100
+
 class WorkoutTimerApplication : Application() {
     val timerViewModel by lazy { TimerViewModel(AndroidWakeLocker(this)) }
     private val prefsManager by lazy { PrefsManager(this) }

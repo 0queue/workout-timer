@@ -30,15 +30,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.ui.tooling.preview.Preview
 import dev.thomasharris.workouttimer.R
+import dev.thomasharris.workouttimer.SMALL_ANIMATION_TIME_MS
 import dev.thomasharris.workouttimer.ui.PhaseCard
 import dev.thomasharris.workouttimer.ui.PhaseCardEvent
 import dev.thomasharris.workouttimer.ui.PlayButton
 import dev.thomasharris.workouttimer.ui.scale
 import dev.thomasharris.workouttimer.ui.theme.WorkoutTimerTheme
 
-val scalePropKey = FloatPropKey()
+private val scalePropKey = FloatPropKey()
 
-val scaleTransitionDefinition = transitionDefinition<Boolean> {
+private val scaleTransitionDefinition = transitionDefinition<Boolean> {
     state(true) {
         this[scalePropKey] = 1f
     }
@@ -48,7 +49,7 @@ val scaleTransitionDefinition = transitionDefinition<Boolean> {
     }
 
     transition(true to false, false to true) {
-        scalePropKey using tween(durationMillis = 100)
+        scalePropKey using tween(durationMillis = SMALL_ANIMATION_TIME_MS)
     }
 }
 
@@ -74,7 +75,13 @@ fun TimerScreen(
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
             backgroundColor = MaterialTheme.colors.surface,
-            title = { Text(stringResource(id = R.string.app_name)) },
+            title = {
+                Text(
+                    text = stringResource(id = R.string.app_name),
+                    // TODO alpha07 has a bug? looks normal in preview, is not styled when run
+                    style = MaterialTheme.typography.h6
+                )
+            },
             elevation = 0.dp,
             actions = {
                 if ((1f - scaleTransitionState[scalePropKey]) > .1f) IconButton(
