@@ -21,7 +21,7 @@ import dev.thomasharris.workouttimer.ui.theme.WorkoutTimerTheme
 fun SettingsSheet(
     settingsViewState: SettingsViewState,
     onNightModeSelected: (SettingsViewState.NightMode) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
@@ -52,6 +52,10 @@ fun SettingsSheet(
                 )
             }
         }
+
+        GithubLinkText(
+            modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp)
+        )
     }
 }
 
