@@ -63,6 +63,7 @@ fun TimerScreen(
     onPhaseClicked: (Phase, PhaseCardEvent) -> Unit,
     onStopClicked: () -> Unit,
     onSettingsClicked: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
 
     val canPlay = state is EditState || (state is InProgressState && state.isPaused)
@@ -72,7 +73,7 @@ fun TimerScreen(
         toState = state is InProgressState,
     )
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier =  modifier.fillMaxSize()) {
         TopAppBar(
             backgroundColor = MaterialTheme.colors.surface,
             title = {

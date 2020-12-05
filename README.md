@@ -13,4 +13,4 @@ Jetpack Compose for the UI.
 - kotlinify app/build.gradle when it works again
 - Organize code a lot better
 - ~~async pref loading/setting (for night mode)~~
-- draw behind status bar (Claw for Lobsters can, why not compose)
+- ~~draw behind status bar (Claw for Lobsters can, why not compose)~~

@@ -65,4 +65,5 @@ dependencies {
 
     implementation 'androidx.compose.material:material-icons-extended:1.0.0-alpha08'
 
+    implementation 'dev.chrisbanes.accompanist:accompanist-insets:0.4.0'
 }

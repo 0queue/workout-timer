@@ -9,13 +9,19 @@ import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.Surface
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.setContent
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
-import dev.thomasharris.workouttimer.timer.TimerEvent
-import dev.thomasharris.workouttimer.timer.TimerScreen
+import dev.chrisbanes.accompanist.insets.ProvideWindowInsets
+import dev.chrisbanes.accompanist.insets.navigationBarsPadding
+import dev.chrisbanes.accompanist.insets.statusBarsPadding
+import dev.chrisbanes.accompanist.insets.systemBarsPadding
 import dev.thomasharris.workouttimer.settings.SettingsSheet
 import dev.thomasharris.workouttimer.settings.SettingsViewState
+import dev.thomasharris.workouttimer.timer.TimerEvent
+import dev.thomasharris.workouttimer.timer.TimerScreen
 import dev.thomasharris.workouttimer.ui.displayName
 import dev.thomasharris.workouttimer.ui.theme.WorkoutTimerTheme
 import dev.thomasharris.workouttimer.util.TextToSpeechManager
@@ -46,35 +52,40 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
         setContent {
             val timerViewState by timerViewModel.stateFlow.collectAsState()
             val settingsState by settingsViewModel.stateFlow.collectAsState(SettingsViewState.UNINITIALIZED)
             val ttsState by ttsManager.isReady.collectAsState()
 
             WorkoutTimerTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(color = MaterialTheme.colors.background) {
-                    ModalBottomSheetLayout(
-                        sheetState = settingsSheetState,
-                        sheetShape = MaterialTheme.shapes.large.copy(
-                            topLeft = CornerSize(16.dp),
-                            topRight = CornerSize(16.dp)
-                        ),
-                        sheetContent = {
-                            SettingsSheet(
-                                settingsViewState = settingsState,
-                                onNightModeSelected = settingsViewModel::setNightMode
+                ProvideWindowInsets {
+                    Surface(color = MaterialTheme.colors.background) {
+                        ModalBottomSheetLayout(
+                            sheetState = settingsSheetState,
+                            sheetShape = MaterialTheme.shapes.large.copy(
+                                topLeft = CornerSize(16.dp),
+                                topRight = CornerSize(16.dp)
+                            ),
+                            sheetContent = {
+                                SettingsSheet(
+                                    settingsViewState = settingsState,
+                                    onNightModeSelected = settingsViewModel::setNightMode,
+                                    modifier = Modifier.navigationBarsPadding()
+                                )
+                            }
+                        ) {
+                            TimerScreen(
+                                state = timerViewState,
+                                onPlayButtonClicked = timerViewModel::onToggle,
+                                onPhaseClicked = timerViewModel::onPhaseClicked,
+                                onStopClicked = timerViewModel::onStopClicked,
+                                onSettingsClicked = { settingsSheetState.show() },
+                                ttsReady = ttsState,
+                                modifier = Modifier.systemBarsPadding()
                             )
                         }
-                    ) {
-                        TimerScreen(
-                            state = timerViewState,
-                            onPlayButtonClicked = timerViewModel::onToggle,
-                            onPhaseClicked = timerViewModel::onPhaseClicked,
-                            onStopClicked = timerViewModel::onStopClicked,
-                            onSettingsClicked = { settingsSheetState.show() },
-                            ttsReady = ttsState
-                        )
                     }
                 }
             }
