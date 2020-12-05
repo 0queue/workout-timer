@@ -31,7 +31,7 @@ fun PlayButton(
     interactionState: InteractionState = remember { InteractionState() },
     elevation: ButtonElevation = ButtonConstants.defaultElevation(),
     enabled: Boolean = true,
-    icon: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     Surface(
         elevation = elevation.elevation(true, interactionState),
@@ -45,9 +45,9 @@ fun PlayButton(
                 interactionState = interactionState,
                 enabled = enabled
             ),
-            alignment = Alignment.Center,
-            children = {
-                icon()
+            contentAlignment = Alignment.Center,
+            content = {
+                content()
             },
         )
     }
@@ -57,6 +57,6 @@ fun PlayButton(
 @Composable
 fun PlayButtonPreview() {
     PlayButton {
-        Icon(asset = Icons.Default.PlayArrow.scale(2f))
+        Icon(imageVector = Icons.Default.PlayArrow.scale(2f))
     }
 }

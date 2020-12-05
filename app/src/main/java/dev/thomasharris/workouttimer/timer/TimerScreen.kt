@@ -5,7 +5,6 @@ import androidx.compose.animation.core.transitionDefinition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.transition
 import androidx.compose.foundation.ScrollableColumn
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -16,6 +15,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
@@ -25,7 +25,7 @@ import androidx.compose.material.icons.filled.Stop
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawOpacity
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.ui.tooling.preview.Preview
@@ -37,7 +37,7 @@ import dev.thomasharris.workouttimer.ui.PlayButton
 import dev.thomasharris.workouttimer.ui.scale
 import dev.thomasharris.workouttimer.ui.theme.WorkoutTimerTheme
 
-private val scalePropKey = FloatPropKey()
+private val scalePropKey = FloatPropKey(label = "scale")
 
 private val scaleTransitionDefinition = transitionDefinition<Boolean> {
     state(true) {
@@ -86,9 +86,9 @@ fun TimerScreen(
             actions = {
                 if ((1f - scaleTransitionState[scalePropKey]) > .1f) IconButton(
                     onClick = onSettingsClicked,
-                    modifier = Modifier.drawOpacity(1f - scaleTransitionState[scalePropKey])
+                    modifier = Modifier.alpha(1f - scaleTransitionState[scalePropKey])
                 ) {
-                    Icon(asset = Icons.Default.Settings)
+                    Icon(imageVector = Icons.Default.Settings)
                 }
             }
         )
@@ -117,7 +117,7 @@ fun TimerScreen(
                 val icon = if (canPlay) Icons.Default.PlayArrow else Icons.Default.Pause
                 Icon(
                     modifier = Modifier.padding(4.dp),
-                    asset = icon.scale(2f),
+                    imageVector = icon.scale(2f),
                 )
             }
 
@@ -136,7 +136,7 @@ fun TimerScreen(
                     Icon(
                         modifier = Modifier
                             .padding(4.dp),
-                        asset = Icons.Default.Stop.scale(2f * scaleTransitionState[scalePropKey])
+                        imageVector = Icons.Default.Stop.scale(2f * scaleTransitionState[scalePropKey])
                     )
                 }
         }

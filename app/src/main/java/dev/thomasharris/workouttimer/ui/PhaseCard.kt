@@ -5,7 +5,6 @@ import androidx.compose.animation.core.FloatPropKey
 import androidx.compose.animation.core.transitionDefinition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.transition
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,27 +12,32 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.AmbientEmphasisLevels
+import androidx.compose.material.AmbientContentAlpha
 import androidx.compose.material.Card
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ProvideEmphasis
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowLeft
 import androidx.compose.material.icons.filled.ArrowRight
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.Providers
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawOpacity
-import androidx.compose.ui.graphics.vector.VectorAsset
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.ui.tooling.preview.Preview
+import dev.thomasharris.workouttimer.SMALL_ANIMATION_TIME_MS
 import dev.thomasharris.workouttimer.timer.EditState
 import dev.thomasharris.workouttimer.timer.InProgressState
 import dev.thomasharris.workouttimer.timer.Phase
@@ -41,12 +45,8 @@ import dev.thomasharris.workouttimer.timer.TimerState
 import dev.thomasharris.workouttimer.timer.TimerViewModel
 import kotlin.math.ceil
 import kotlin.math.roundToInt
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import dev.thomasharris.workouttimer.SMALL_ANIMATION_TIME_MS
 
-private val elevationPropKey = DpPropKey()
+private val elevationPropKey = DpPropKey(label = "elevation")
 
 private val elevationTransitionDefinition = transitionDefinition<Boolean> {
     state(true) {
@@ -62,7 +62,7 @@ private val elevationTransitionDefinition = transitionDefinition<Boolean> {
     }
 }
 
-private val opacityPropKey = FloatPropKey()
+private val opacityPropKey = FloatPropKey(label = "opacity")
 
 private val opacityTransitionDefinition = transitionDefinition<Boolean> {
     state(true) {
@@ -86,14 +86,14 @@ fun PhaseCard(
     modifier: Modifier = Modifier,
 ) {
     val textEmphasis = when {
-        phase == Phase.SETS -> AmbientEmphasisLevels.current.high
-        state is InProgressState && state.current?.phase != phase -> AmbientEmphasisLevels.current.disabled
-        else -> AmbientEmphasisLevels.current.high
+        phase == Phase.SETS -> ContentAlpha.high
+        state is InProgressState && state.current?.phase != phase -> ContentAlpha.disabled
+        else -> ContentAlpha.high
     }
 
     val buttonEmphasis = when (state) {
-        is InProgressState -> AmbientEmphasisLevels.current.disabled
-        else -> AmbientEmphasisLevels.current.high
+        is InProgressState -> ContentAlpha.disabled
+        else -> ContentAlpha.high
     }
 
     val elevationTransitionState = transition(
@@ -123,7 +123,7 @@ fun PhaseCard(
                 modifier = Modifier.padding(8.dp).fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                ProvideEmphasis(emphasis = textEmphasis) {
+                Providers(AmbientContentAlpha provides textEmphasis) {
                     Text(
                         phase.displayName,
                         style = MaterialTheme.typography.h4,
@@ -135,16 +135,16 @@ fun PhaseCard(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    ProvideEmphasis(emphasis = buttonEmphasis) {
+                    Providers(AmbientContentAlpha provides buttonEmphasis) {
                         IconButton(
                             enabled = state is EditState,
                             modifier = Modifier.padding(start = 32.dp),
                             onClick = { onClick(PhaseCardEvent.DECREMENT) },
                         ) {
-                            Icon(asset = Icons.Default.ArrowLeft.scale(2f))
+                            Icon(imageVector = Icons.Default.ArrowLeft.scale(2f))
                         }
                     }
-                    ProvideEmphasis(emphasis = textEmphasis) {
+                    Providers(AmbientContentAlpha provides textEmphasis) {
                         Text(
                             state.valueOfFormatted(phase = phase),
                             textAlign = TextAlign.Center,
@@ -153,13 +153,13 @@ fun PhaseCard(
                         )
                     }
 
-                    ProvideEmphasis(emphasis = buttonEmphasis) {
+                    Providers(AmbientContentAlpha provides buttonEmphasis) {
                         IconButton(
                             enabled = state is EditState,
                             modifier = Modifier.padding(end = 32.dp),
                             onClick = { onClick(PhaseCardEvent.INCREMENT) },
                         ) {
-                            Icon(asset = Icons.Default.ArrowRight.scale(2f))
+                            Icon(imageVector = Icons.Default.ArrowRight.scale(2f))
                         }
                     }
                 }
@@ -171,7 +171,7 @@ fun PhaseCard(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .fillMaxWidth()
-                        .drawOpacity(opacityTransitionState[opacityPropKey]),
+                        .alpha(opacityTransitionState[opacityPropKey]),
                     progress = progress // 1f - state.progress.coerceIn(0f, 1f)
                 )
         }
@@ -190,7 +190,7 @@ enum class PhaseCardEvent {
     DECREMENT,
 }
 
-fun VectorAsset.scale(scale: Float): VectorAsset =
+fun ImageVector.scale(scale: Float): ImageVector =
     copy(defaultWidth = defaultWidth * scale, defaultHeight = defaultHeight * scale)
 
 val Phase.displayName: String
