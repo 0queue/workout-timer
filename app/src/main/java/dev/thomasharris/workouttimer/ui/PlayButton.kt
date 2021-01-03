@@ -4,7 +4,7 @@ import androidx.compose.foundation.InteractionState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.ButtonConstants
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ButtonElevation
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
@@ -29,7 +29,7 @@ fun PlayButton(
     onClick: () -> Unit = {},
     color: Color = MaterialTheme.colors.primary,
     interactionState: InteractionState = remember { InteractionState() },
-    elevation: ButtonElevation = ButtonConstants.defaultElevation(),
+    elevation: ButtonElevation = ButtonDefaults.elevation(),
     enabled: Boolean = true,
     content: @Composable () -> Unit,
 ) {

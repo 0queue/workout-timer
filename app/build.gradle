@@ -10,8 +10,8 @@ android {
         applicationId "dev.thomasharris.workouttimer"
         minSdkVersion 23
         targetSdkVersion 30
-        versionCode 5
-        versionName "v5"
+        versionCode 6
+        versionName "v6"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -42,28 +42,28 @@ android {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.0.0-alpha06'
-        kotlinCompilerVersion '1.4.10'
+        kotlinCompilerExtensionVersion '1.0.0-alpha09'
+        kotlinCompilerVersion '1.4.21'
     }
 }
 
 dependencies {
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.4.20"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.4.21"
     implementation 'androidx.core:core-ktx:1.3.2'
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.android.material:material:1.2.1'
-    implementation "androidx.compose.ui:ui:1.0.0-alpha08"
-    implementation "androidx.compose.material:material:1.0.0-alpha08"
+    implementation "androidx.compose.ui:ui:1.0.0-alpha09"
+    implementation "androidx.compose.material:material:1.0.0-alpha09"
     implementation "androidx.ui:ui-tooling:1.0.0-alpha07"
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.3.0-beta01'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.3.0-rc01'
     testImplementation 'junit:junit:4.13.1'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.2'
 
-    implementation 'androidx.compose.material:material-icons-extended:1.0.0-alpha08'
+    implementation 'androidx.compose.material:material-icons-extended:1.0.0-alpha09'
 
     implementation 'dev.chrisbanes.accompanist:accompanist-insets:0.4.0'
 }

@@ -16,7 +16,6 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import dev.chrisbanes.accompanist.insets.ProvideWindowInsets
 import dev.chrisbanes.accompanist.insets.navigationBarsPadding
-import dev.chrisbanes.accompanist.insets.statusBarsPadding
 import dev.chrisbanes.accompanist.insets.systemBarsPadding
 import dev.thomasharris.workouttimer.settings.SettingsSheet
 import dev.thomasharris.workouttimer.settings.SettingsViewState

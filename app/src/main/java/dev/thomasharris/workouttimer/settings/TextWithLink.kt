@@ -14,7 +14,7 @@ import androidx.compose.ui.platform.AmbientUriHandler
 import androidx.compose.ui.selection.AmbientTextSelectionColors
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
-import androidx.compose.ui.text.annotatedString
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.ui.tooling.preview.Preview
@@ -32,7 +32,7 @@ fun GithubLinkText(
     // is basically just "wrap or not"
     val text = "Check for the latest release at\n"
     val link = "github.com/0queue/workout-timer/releases"
-    val annotatedString = annotatedString {
+    val annotatedString = buildAnnotatedString {
         append(text)
         // not entirely satisfied with primary and text selection colors,
         // but have no idea where to find proper link colors
